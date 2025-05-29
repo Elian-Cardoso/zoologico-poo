@@ -1,0 +1,14 @@
+C:\Users\cardo\ZoologicoPOO\bin\Debug\net8.0\ZoologicoPOO.exe
+C:\Users\cardo\ZoologicoPOO\bin\Debug\net8.0\ZoologicoPOO.deps.json
+C:\Users\cardo\ZoologicoPOO\bin\Debug\net8.0\ZoologicoPOO.runtimeconfig.json
+C:\Users\cardo\ZoologicoPOO\bin\Debug\net8.0\ZoologicoPOO.dll
+C:\Users\cardo\ZoologicoPOO\bin\Debug\net8.0\ZoologicoPOO.pdb
+C:\Users\cardo\ZoologicoPOO\obj\Debug\net8.0\ZoologicoPOO.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\cardo\ZoologicoPOO\obj\Debug\net8.0\ZoologicoPOO.AssemblyInfoInputs.cache
+C:\Users\cardo\ZoologicoPOO\obj\Debug\net8.0\ZoologicoPOO.AssemblyInfo.cs
+C:\Users\cardo\ZoologicoPOO\obj\Debug\net8.0\ZoologicoPOO.csproj.CoreCompileInputs.cache
+C:\Users\cardo\ZoologicoPOO\obj\Debug\net8.0\ZoologicoPOO.dll
+C:\Users\cardo\ZoologicoPOO\obj\Debug\net8.0\refint\ZoologicoPOO.dll
+C:\Users\cardo\ZoologicoPOO\obj\Debug\net8.0\ZoologicoPOO.pdb
+C:\Users\cardo\ZoologicoPOO\obj\Debug\net8.0\ZoologicoPOO.genruntimeconfig.cache
+C:\Users\cardo\ZoologicoPOO\obj\Debug\net8.0\ref\ZoologicoPOO.dll
