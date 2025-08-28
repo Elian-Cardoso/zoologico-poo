@@ -37,7 +37,7 @@
   .confirmar{margin-top:15px;background:#3EB489;color:#fff;padding:10px 16px;border:none;border-radius:8px;cursor:pointer;}
   .form-cartao{display:flex;flex-direction:column;gap:10px;text-align:left;}
   .form-cartao label{font-size:14px;font-weight:600;color:#32174D;}
-  .form-cartao input, .form-cartao select{padding:8px;border:1px solid #ccc;border-radius:6px;}
+  .form-cartao input,.form-cartao select{padding:8px;border:1px solid #ccc;border-radius:6px;}
 </style>
 </head>
 <body>
@@ -72,51 +72,58 @@
       <h2>Escolha a forma de pagamento</h2>
       <p class="total">Total: {{ formatarMoeda(total) }}</p>
 
-      <div v-if="!pagamentoSelecionado" class="opcoes">
-        <button class="pix" @click="pagamentoSelecionado='pix'">Pix</button>
-        <button class="cartao" @click="pagamentoSelecionado='cartao'">Cartão</button>
-        <button class="dinheiro" @click="pagamentoSelecionado='dinheiro'">Dinheiro</button>
-        <button class="fechar" @click="mostrarModal=false">Cancelar</button>
+      <div class="opcoes" v-if="!pagamentoSelecionado">
+        <button class="pix" @click="pagamentoSelecionado='pix'"><i class="fas fa-qrcode"></i> Pix</button>
+        <button class="cartao" @click="pagamentoSelecionado='cartao'"><i class="fas fa-credit-card"></i> Cartão</button>
+        <button class="dinheiro" @click="pagamentoSelecionado='dinheiro'"><i class="fas fa-money-bill-wave"></i> Dinheiro</button>
       </div>
 
       <!-- PIX -->
       <div v-if="pagamentoSelecionado==='pix'">
         <h3>Pagamento via Pix</h3>
         <div class="qr-code">
-          <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=PagamentoPix" alt="QR Code Pix">
+          <img :src="'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=PagamentoPix' + total" alt="QR Code Pix">
         </div>
-        <button class="confirmar" @click="finalizar('Pix')">Confirmar Pagamento</button>
-        <button class="fechar" @click="pagamentoSelecionado=null">Voltar</button>
+        <p>Escaneie o QR Code com seu banco para concluir o pagamento.</p>
+        <button class="confirmar" @click="confirmarPagamento">Confirmar</button>
       </div>
 
       <!-- CARTÃO -->
-      <div v-if="pagamentoSelecionado==='cartao'">
+      <div v-if="pagamentoSelecionado==='cartao'" class="form-cartao">
         <h3>Pagamento com Cartão</h3>
-        <form class="form-cartao" @submit.prevent="finalizar('Cartão')">
-          <label>Número do Cartão</label>
-          <input v-model="cartao.numero" required>
-          <label>Validade</label>
-          <input v-model="cartao.validade" required placeholder="MM/AA">
-          <label>CVV</label>
-          <input v-model="cartao.cvv" required type="password" maxlength="3">
-          <label>Parcelamento</label>
-          <select v-model="parcelas" required>
-            <option v-for="n in 12" :key="n" :value="n">
-              {{ n }}x de {{ formatarMoeda(total/n) }}
-            </option>
-          </select>
-          <button class="confirmar" type="submit">Pagar</button>
-        </form>
-        <button class="fechar" @click="pagamentoSelecionado=null">Voltar</button>
+
+        <label>Número do Cartão</label>
+        <input type="text" v-model="cartao.numero" placeholder="0000 0000 0000 0000">
+
+        <label>Validade</label>
+        <input type="text" v-model="cartao.validade" placeholder="MM/AA">
+
+        <label>CVV</label>
+        <input type="text" v-model="cartao.cvv" placeholder="123">
+
+        <label>Parcelamento</label>
+        <select v-model="cartao.parcelas">
+          <option v-for="n in 12" :value="n">
+            {{ n }}x de {{ formatarMoeda(total/n) }}
+          </option>
+        </select>
+
+        <p style="margin-top:10px;font-weight:bold;color:#3EB489;">
+          Total: {{ formatarMoeda(total) }} 
+          <span v-if="cartao.parcelas"> ({{ cartao.parcelas }}x de {{ formatarMoeda(total/cartao.parcelas) }})</span>
+        </p>
+
+        <button class="confirmar" @click="confirmarPagamento">Pagar</button>
       </div>
 
       <!-- DINHEIRO -->
       <div v-if="pagamentoSelecionado==='dinheiro'">
         <h3>Pagamento em Dinheiro</h3>
-        <p>O pagamento será realizado na entrega.</p>
-        <button class="confirmar" @click="finalizar('Dinheiro')">Confirmar Pedido</button>
-        <button class="fechar" @click="pagamentoSelecionado=null">Voltar</button>
+        <p>O pagamento será realizado na entrega/caixa.</p>
+        <button class="confirmar" @click="confirmarPagamento">Confirmar</button>
       </div>
+
+      <button class="fechar" @click="fecharModal">Fechar</button>
     </div>
   </div>
 </div>
@@ -128,8 +135,7 @@ new Vue({
     carrinho:[],
     mostrarModal:false,
     pagamentoSelecionado:null,
-    cartao:{numero:'', validade:'', cvv:''},
-    parcelas:1
+    cartao:{numero:'', validade:'', cvv:'', parcelas:1}
   },
   computed:{
     carrinhoAgrupado(){
@@ -143,6 +149,7 @@ new Vue({
     total(){ return this.carrinho.reduce((soma,prod)=>soma+prod.valor,0); }
   },
   created(){
+    // Verifica login
     const logado = localStorage.getItem("logado");
     if(!logado){ window.location.href = "login.html"; }
     this.carregar();
@@ -156,23 +163,21 @@ new Vue({
       this.carrinho = this.carrinho.filter(prod => prod.id !== id);
       localStorage.setItem('carrinho',JSON.stringify(this.carrinho));
     },
-    formatarMoeda(valor){ 
-      return new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(valor); 
-    },
+    formatarMoeda(valor){ return new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(valor); },
     abrirPagamento(){
       if(this.carrinho.length===0){ alert('O carrinho está vazio!'); return; }
       this.mostrarModal = true;
       this.pagamentoSelecionado = null;
     },
-    finalizar(metodo){
-      if(metodo==='Cartão'){
-        alert(Pagamento aprovado em ${this.parcelas}x de ${this.formatarMoeda(this.total/this.parcelas)});
-      }else{
-        alert(Pagamento confirmado via ${metodo});
-      }
+    fecharModal(){
+      this.mostrarModal = false;
+      this.pagamentoSelecionado = null;
+    },
+    confirmarPagamento(){
+      alert("Pagamento confirmado! Obrigado pela compra.");
       this.carrinho = [];
-      localStorage.removeItem('carrinho');
-      this.mostrarModal=false;
+      localStorage.removeItem("carrinho");
+      this.fecharModal();
     },
     sair(){
       localStorage.removeItem("logado");
